@@ -1,0 +1,37 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: 'Unity'
+
+steps:
+
+  - task: UnityBuildTask@3
+    displayName: Unity Build Android
+    inputs:
+      unityEditorsPathMode: unityHub
+      buildTarget: 'Android'
+      unityProjectPath: './'
+      outputPath: '$(Build.BinariesDirectory)'
+      outputFileName: 'drop'
+
+  - task: AndroidSigning@3
+    inputs:
+      apkFiles: '**/*.apk'
+      apksignerKeystoreFile: 'dmkeystore.jks'
+      apksignerKeystorePassword: 'PgzbyRmrzRCOchCa20lxqJlT4WgJou92a3eVtc8ctXJLITjotyn7Uka2vwNJ6x3LwuWO5ouQ8IV0xOiJCFRmablHhJBosgMGmxl'
+      apksignerKeystoreAlias: 'upload'
+  - task: CopyFiles@2
+    inputs:
+        Contents: '**'
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
